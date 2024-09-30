@@ -1,0 +1,9 @@
+{
+    "version": "2.0.0",
+    "tasks": [{
+        "label": "test",
+        "command": "./run_bend.sh", // Could be any other shell command
+        "args": ["C:\\Users\\Djole\\Desktop\\bend"],
+        "type": "shell"
+    }]
+}
