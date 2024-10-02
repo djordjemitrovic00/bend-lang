@@ -1,0 +1,6 @@
+SUM MILION
+Rust DQ: 
+Rust SEQ:
+C OMP:
+C OMP DQ:
+CUDA:
