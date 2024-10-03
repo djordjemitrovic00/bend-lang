@@ -2,7 +2,7 @@
 #include <cuda_runtime.h>
 
 __global__ void sum_reduce(int* input, unsigned long long* output, int n) {
-    __shared__ int shared_data[];
+    extern __shared__ int shared_data[];
 
     int tid = threadIdx.x;
     int global_id = blockIdx.x * blockDim.x + threadIdx.x;

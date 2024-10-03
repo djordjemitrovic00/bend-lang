@@ -1,14 +1,16 @@
-fn gen(depth: u32, x: u32) -> (u32, u32) {
+use std::time::Instant;
+
+fn gen(depth: u64, x: u64) -> (u64, u64) {
     if depth == 0 {
         (x, x)
     } else {
-        let left = gen(depth - 1, x * 2 + 1);
-        let right = gen(depth - 1, x * 2);
+        let left = gen(depth - 1, x * 2);
+        let right = gen(depth - 1, x * 2 + 1);
         (left.0, right.1)
     }
 }
 
-fn sum(depth: u32, t: (u32, u32)) -> u32 {
+fn sum(depth: u64, t: (u64, u64)) -> u64 {
     if depth == 0 {
         t.0
     } else {
@@ -17,7 +19,7 @@ fn sum(depth: u32, t: (u32, u32)) -> u32 {
     }
 }
 
-fn swap(s: bool, a: u32, b: u32) -> (u32, u32) {
+fn swap(s: bool, a: u64, b: u64) -> (u64, u64) {
     if s {
         (b, a)
     } else {
@@ -25,46 +27,55 @@ fn swap(s: bool, a: u32, b: u32) -> (u32, u32) {
     }
 }
 
-fn warp(depth: u32, s: bool, a: (u32, u32), b: (u32, u32)) -> ((u32, u32), (u32, u32)) {
+fn warp(depth: u64, s: bool, a: (u64, u64), b: (u64, u64)) -> ((u64, u64), (u64, u64)) {
     if depth == 0 {
         let (a, b) = swap(s ^ (a.0 > b.0), a.0, b.0);
         ((a, b), (a, b))
     } else {
         let ((a_a, a_b), (b_a, b_b)) = (a, b);
         let (a1, b1) = warp(depth - 1, s, (a_a, a_b), (b_a, b_b));
-        ((a1.0, b1.0), (a1.1, b1.1))
+        ((a1.0, a1.1), (b1.0, b1.1))
     }
 }
 
-fn flow(depth: u32, s: bool, t: (u32, u32)) -> (u32, u32) {
+fn flow(depth: u64, s: bool, t: (u64, u64)) -> (u64, u64) {
     if depth == 0 {
         t
     } else {
         let (a, b) = t;
-        down(depth, s, warp(depth - 1, s, (a, a), (b, b)))
+        let sorted = warp(depth - 1, s, (a, a), (b, b));
+        down(depth - 1, s, sorted.0, sorted.1)
     }
 }
 
-fn down(depth: u32, s: bool, t: (u32, u32)) -> (u32, u32) {
+fn down(depth: u64, s: bool, left: (u64, u64), right: (u64, u64)) -> (u64, u64) {
+    if depth == 0 {
+        (left.0, right.1)
+    } else {
+        let left_sorted = flow(depth - 1, s, left);
+        let right_sorted = flow(depth - 1, s, right);
+        (left_sorted.0, right_sorted.1)
+    }
+}
+
+fn sort(depth: u64, s: bool, t: (u64, u64)) -> (u64, u64) {
     if depth == 0 {
         t
     } else {
         let (a, b) = t;
-        (flow(depth - 1, s, (a, a)), flow(depth - 1, s, (b, b)))
-    }
-}
-
-fn sort(depth: u32, s: bool, t: (u32, u32)) -> (u32, u32) {
-    if depth == 0 {
-        t
-    } else {
-        let (a, b) = t;
-        flow(depth, s, (sort(depth - 1, false, a), sort(depth - 1, true, b)))
+        let sorted_left = sort(depth - 1, false, (a, a));
+        let sorted_right = sort(depth - 1, true, (b, b));
+        flow(depth, s, (sorted_left.0, sorted_right.1))
     }
 }
 
 fn main() {
+    let start_time = Instant::now();
+    
     let t = gen(18, 0);
     let result = sum(18, sort(18, false, t));
-    println!("Result: {}", result);
+    
+    let duration = start_time.elapsed();
+    println!("Rezultat: {}", result);
+    println!("Vreme izvršenja: {} ms", duration.as_millis());
 }
